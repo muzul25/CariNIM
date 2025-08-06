@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 
-# Fungsi untuk memuat CSV
+# Fungsi memuat CSV
 @st.cache_data
 def load_database():
     try:
@@ -12,39 +12,40 @@ def load_database():
 
 df = load_database()
 
-# Tampilkan nama-nama kolom asli
-st.write("📋 Kolom dalam database:", df.columns.tolist())
+# Tampilkan nama kolom untuk membantu debugging
+st.write("Kolom di file:", df.columns.tolist())
 
-# Deteksi kolom email secara fleksibel
-email_column = next((col for col in df.columns if 'email' in col.lower()), None)
-nama_column = next((col for col in df.columns if 'nama' in col.lower()), None)
-username_column = next((col for col in df.columns if 'username' in col.lower()), None)
-password_column = next((col for col in df.columns if 'password' in col.lower()), None)
+# Judul
+st.title("🔐 Cari Username & Password Berdasarkan Email")
 
-# Validasi kolom
-if not email_column:
-    st.error("❌ Kolom 'Email' tidak ditemukan. Harap periksa kembali file CSV Anda.")
-    st.stop()
-
-# Input Email
-st.title("🔐 Cari Data Login")
+# Input email
 email_input = st.text_input("Masukkan Email Anda").strip().lower()
 
+# Coba deteksi nama kolom email yang benar
+possible_email_columns = [col for col in df.columns if 'email' in col.lower()]
+if possible_email_columns:
+    email_column = possible_email_columns[0]  # Ambil yang pertama cocok
+else:
+    st.error("Kolom email tidak ditemukan dalam file.")
+    st.stop()
+
+# Tombol pencarian
 if st.button("Cari Data"):
-    if not email_input:
-        st.warning("⚠️ Silakan masukkan email terlebih dahulu.")
-    else:
+    if email_input:
         result = df[df[email_column].str.lower() == email_input]
 
-        if result.empty:
-            st.error("🚫 Email tidak ditemukan dalam database.")
-        else:
-            data = result.iloc[0]  # Ambil satu data pertama
-            st.success("✅ Data ditemukan!")
+        if not result.empty:
+            user_data = result.iloc[0]
+            # Coba cari kolom nama, username, dan password
+            nama_col = next((c for c in df.columns if 'nama' in c.lower()), None)
+            user_col = next((c for c in df.columns if 'username' in c.lower()), None)
+            pass_col = next((c for c in df.columns if 'password' in c.lower()), None)
 
-            if nama_column:
-                st.write("**Nama:**", data[nama_column])
-            if username_column:
-                st.write("**Username:**", data[username_column])
-            if password_column:
-                st.write("**Password:**", data[password_column])
+            st.success("✅ Data ditemukan!")
+            if nama_col: st.write(f"**Nama**: {user_data[nama_col]}")
+            if user_col: st.write(f"**Username**: {user_data[user_col]}")
+            if pass_col: st.write(f"**Password**: {user_data[pass_col]}")
+        else:
+            st.error("🚫 Email tidak ditemukan.")
+    else:
+        st.warning("⚠️ Masukkan email terlebih dahulu.")
