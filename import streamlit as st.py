@@ -1,33 +1,32 @@
 import streamlit as st
 import pandas as pd
 
-# Ganti dengan nama file CSV kamu
-CSV_PATH = "database.csv"
-
+# Load database CSV
 @st.cache_data
-def load_data():
-    try:
-        df = pd.read_csv(CSV_PATH)
-        return df
-    except Exception as e:
-        st.error(f"Gagal memuat data: {e}")
-        return pd.DataFrame()
+def load_database():
+    return pd.read_csv("database.csv")
 
-def main():
-    st.title("🔐 Cek Akun Aplikasi Anda")
-    st.write("Masukkan email Anda untuk melihat username & password.")
+df = load_database()
 
-    df = load_data()
+# Judul Aplikasi
+st.title("Pencarian Data Login Berdasarkan Email")
 
-    email = st.text_input("Masukkan email:")
+# Input Email dari Pengguna
+email_input = st.text_input("Masukkan Email Anda").strip().lower()
 
-    if email:
-        result = df[df['email'].str.lower() == email.lower()]
+# Proses pencarian saat tombol ditekan
+if st.button("Cari Data"):
+    if email_input:
+        # Filter data berdasarkan email
+        result = df[df['Email'].str.lower() == email_input]
+
         if not result.empty:
-            st.success("✅ Data ditemukan!")
-            st.dataframe(result)
+            user_data = result.iloc[0]  # Hanya ambil satu data
+            st.success("Data ditemukan!")
+            st.write(f"**Nama**: {user_data['Nama']}")
+            st.write(f"**Username**: {user_data['Username']}")
+            st.write(f"**Password**: {user_data['Password']}")
         else:
-            st.warning("❌ Email tidak ditemukan.")
-
-if _name_ == "_main_":
-    main()
+            st.error("Email tidak ditemukan dalam database.")
+    else:
+        st.warning("Silakan masukkan email terlebih dahulu.")
