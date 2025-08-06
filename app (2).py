@@ -33,7 +33,7 @@ def admin_dashboard():
     uploaded_file = st.file_uploader("Upload file CSV", type=["csv"])
     if uploaded_file is not None:
         df = pd.read_csv(uploaded_file, dtype=str)
-        if set(["email", "Nama", "Username", "Password"]).issubset(df.columns):
+        if set(["Email", "Nama", "Username", "Password"]).issubset(df.columns):
             save_database(df)
             st.success("Database berhasil diupdate dan disimpan.")
         else:
